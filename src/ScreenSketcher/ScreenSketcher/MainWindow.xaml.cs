@@ -58,12 +58,8 @@ namespace ScreenSketcher
 
         #endregion
 
-        private bool IsDrawing;
-        private System.Windows.Point PreviousPoint;
-
         private SolidColorBrush OriginalBorderBrush = new();
         private Thickness OriginalBorderThickness = new();
-
 
 
 
@@ -71,16 +67,13 @@ namespace ScreenSketcher
         {
             InitializeComponent();
 
-
-            // Set up event handlers
-            this.MouseLeftButtonDown += Drawing_Start;
-            this.MouseLeftButtonUp += Drawing_Stop;
-            this.MouseMove += Drawing_Draw;
+            drawingInkCanvas.DefaultDrawingAttributes.Color = Colors.Blue;
+            drawingInkCanvas.DefaultDrawingAttributes.Width = 5;
+            drawingInkCanvas.DefaultDrawingAttributes.Height = 5;
+            drawingInkCanvas.EditingMode = InkCanvasEditingMode.Ink;
 
             this.KeyDown += KeyEvents_Shortcuts;
 
-            // Initialize drawing state
-            IsDrawing = false;
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -126,58 +119,10 @@ namespace ScreenSketcher
             }
         }
 
-        #region Drawing
-
         private void Drawing_Reset()
         {
-            drawingCanvas.Children.Clear();
+            drawingInkCanvas.Strokes.Clear();
         }
-
-        private void Drawing_Start(object sender, MouseButtonEventArgs e)
-        {
-            IsDrawing = true;
-            PreviousPoint = e.GetPosition(drawingCanvas);
-
-            Mouse.Capture(drawingCanvas);
-        }
-
-        private void Drawing_Stop(object sender, MouseButtonEventArgs e)
-        {
-            IsDrawing = false;
-
-            Mouse.Capture(null);
-        }
-
-        private void Drawing_Draw(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (IsDrawing)
-            {
-                // Get the current mouse position
-                System.Windows.Point currentPosition = e.GetPosition(drawingCanvas);
-
-                // Draw a line from the previous position to the current position
-                Line line = new()
-                {
-                    Stroke = System.Windows.Media.Brushes.Turquoise,
-                    StrokeThickness = 4,
-                    X1 = PreviousPoint.X,
-                    Y1 = PreviousPoint.Y,
-                    X2 = currentPosition.X,
-                    Y2 = currentPosition.Y
-                };
-
-                // Add the line to the canvas
-                drawingCanvas.Children.Add(line);
-
-                // Update the previous position
-                PreviousPoint = currentPosition;
-            }
-        }
-
-        #endregion
-
-
-
 
         private async Task SaveScreenshot()
         {
@@ -257,7 +202,7 @@ namespace ScreenSketcher
             {
                 Filter = "Image files (*.png;*.jpeg)|*.png;*.jpeg|All files (*.*)|*.*",
                 DefaultExt = "png",
-                FileName = $"ScreenSketch - {DateTime.Now:yyyy-MM-dd - HH:mm:ss.FF}",
+                FileName = $"ScreenSketch - {DateTime.Now:yyyy-MM-dd - HH-mm-ss.FFF}",
                 AddExtension = true
             };
 

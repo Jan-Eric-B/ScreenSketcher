@@ -12,7 +12,7 @@
         AllowsTransparency="True"
         Background="Transparent">
     <Border x:Name="mainBorder" BorderBrush="Red" BorderThickness="2" Margin="10" Background="#01FFFFFF">
-        <Canvas Name="drawingCanvas">
-        </Canvas>
+        <InkCanvas Name="drawingInkCanvas" Background="#01FFFFFF" Focusable="False" Cursor="Pen">
+        </InkCanvas>
     </Border>
 </Window>
