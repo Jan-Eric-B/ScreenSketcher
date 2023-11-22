@@ -1,13 +1,21 @@
-﻿using System;
+﻿using Ookii.Dialogs.Wpf;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -20,9 +28,245 @@ namespace ScreenSketcher
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region DLL Import
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetDesktopWindow();
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetWindowDC(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        [DllImport("gdi32.dll")]
+        private static extern bool BitBlt(
+            IntPtr hdcDest, int xDest, int yDest, int wDest, int hDest,
+            IntPtr hdcSource, int xSrc, int ySrc, int dwRop);
+
+        [DllImport("gdi32.dll")]
+        private static extern bool DeleteObject(IntPtr hObject);
+
+        [DllImport("gdi32.dll")]
+        private static extern IntPtr CreateCompatibleBitmap(IntPtr hdc, int nWidth, int nHeight);
+
+        [DllImport("gdi32.dll")]
+        private static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+
+        [DllImport("gdi32.dll")]
+        private static extern IntPtr SelectObject(IntPtr hdc, IntPtr hgdiobj);
+
+        #endregion
+
+        private bool IsDrawing;
+        private System.Windows.Point PreviousPoint;
+
+        private SolidColorBrush OriginalBorderBrush = new();
+        private Thickness OriginalBorderThickness = new();
+
+
+
+
         public MainWindow()
         {
             InitializeComponent();
+
+
+            // Set up event handlers
+            this.MouseLeftButtonDown += Drawing_Start;
+            this.MouseLeftButtonUp += Drawing_Stop;
+            this.MouseMove += Drawing_Draw;
+
+            this.KeyDown += KeyEvents_Shortcuts;
+
+            // Initialize drawing state
+            IsDrawing = false;
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            // Minimize to tray instead of closing
+            e.Cancel = true; // Prevents the window from closing
+            this.Visibility = Visibility.Hidden; // Hide the window
+        }
+
+
+
+        private void KeyEvents_Shortcuts(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            // (ESC) Closes window
+            if (e.Key == Key.Escape)
+            {
+                ToggleVisibility();
+            }
+            // (S + CTRL) Save Screenshot
+            if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                SaveScreenshot();
+            }
+            // (N + CTRL) Resetting the drawn image
+            if (e.Key == Key.N && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                Drawing_Reset();
+            }
+        }
+
+        private void ToggleVisibility()
+        {
+            // If the window is visible, hide it; otherwise, show it
+            if (this.Visibility == Visibility.Visible)
+            {
+                this.Visibility = Visibility.Hidden;
+                Drawing_Reset();
+            }
+            else
+            {
+                this.Visibility = Visibility.Visible;
+                this.WindowState = WindowState.Normal; // To ensure it's not minimized
+            }
+        }
+
+        #region Drawing
+
+        private void Drawing_Reset()
+        {
+            drawingCanvas.Children.Clear();
+        }
+
+        private void Drawing_Start(object sender, MouseButtonEventArgs e)
+        {
+            IsDrawing = true;
+            PreviousPoint = e.GetPosition(drawingCanvas);
+
+            Mouse.Capture(drawingCanvas);
+        }
+
+        private void Drawing_Stop(object sender, MouseButtonEventArgs e)
+        {
+            IsDrawing = false;
+
+            Mouse.Capture(null);
+        }
+
+        private void Drawing_Draw(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (IsDrawing)
+            {
+                // Get the current mouse position
+                System.Windows.Point currentPosition = e.GetPosition(drawingCanvas);
+
+                // Draw a line from the previous position to the current position
+                Line line = new()
+                {
+                    Stroke = System.Windows.Media.Brushes.Turquoise,
+                    StrokeThickness = 4,
+                    X1 = PreviousPoint.X,
+                    Y1 = PreviousPoint.Y,
+                    X2 = currentPosition.X,
+                    Y2 = currentPosition.Y
+                };
+
+                // Add the line to the canvas
+                drawingCanvas.Children.Add(line);
+
+                // Update the previous position
+                PreviousPoint = currentPosition;
+            }
+        }
+
+        #endregion
+
+
+
+
+        private async Task SaveScreenshot()
+        {
+            // Save original border properties to restore later
+            OriginalBorderBrush = mainBorder.BorderBrush as SolidColorBrush;
+            OriginalBorderThickness = mainBorder.BorderThickness;
+
+            // Make the border transparent and remove its thickness
+            mainBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
+            mainBorder.BorderThickness = new Thickness(0);
+
+            // Allow the UI to update
+            await Task.Delay(100);  // This delay might need adjustment
+
+            // Capture the screen now that the border is invisible
+            CaptureScreen();  // This is your existing method to capture the screen
+
+            // Restore original border properties after the screenshot is taken
+            mainBorder.BorderBrush = OriginalBorderBrush;
+            mainBorder.BorderThickness = OriginalBorderThickness;
+        }
+
+        private static void CaptureScreen()
+        {
+            // Get the size of the screen
+            int screenWidth = (int)SystemParameters.PrimaryScreenWidth;
+            int screenHeight = (int)SystemParameters.PrimaryScreenHeight;
+
+            // Get the device context of the desktop
+            IntPtr hDesktopWnd = GetDesktopWindow();
+            IntPtr hDesktopDC = GetWindowDC(hDesktopWnd);
+            IntPtr hMemoryDC = CreateCompatibleDC(hDesktopDC);
+
+            // Create a compatible bitmap and select it into the memory DC
+            IntPtr hBitmap = CreateCompatibleBitmap(hDesktopDC, screenWidth, screenHeight);
+            IntPtr hOldBitmap = SelectObject(hMemoryDC, hBitmap);
+
+            // BitBlt the desktop DC to the memory DC (i.e., copy the screen to the bitmap)
+            bool success = BitBlt(hMemoryDC, 0, 0, screenWidth, screenHeight, hDesktopDC, 0, 0, 0x00CC0020 /* SRCCOPY */);
+
+            // Select the old bitmap back into the memory DC and clean up
+            SelectObject(hMemoryDC, hOldBitmap);
+            ReleaseDC(hDesktopWnd, hDesktopDC);
+            DeleteObject(hMemoryDC);
+
+            if (!success)
+            {
+                // If BitBlt failed, clean up and throw an exception
+                DeleteObject(hBitmap);
+                throw new System.ComponentModel.Win32Exception();
+            }
+
+            // At this point, hBitmap is a handle to a bitmap containing a screenshot of the entire screen
+
+            // Convert the HBitmap to a WPF-friendly BitmapSource
+            BitmapSource? imageSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                hBitmap,
+                IntPtr.Zero,
+                Int32Rect.Empty,
+                BitmapSizeOptions.FromEmptyOptions());
+
+            // Now, you can save imageSource to a file using a BitmapEncoder
+
+            // Encode the BitmapSource as a PNG and save it to a file
+            PngBitmapEncoder? encoder = new();
+            encoder.Frames.Add(BitmapFrame.Create(imageSource));
+
+            SaveFile(encoder);
+
+            DeleteObject(hBitmap);
+        }
+
+
+        private static void SaveFile(PngBitmapEncoder encoder)
+        {
+            VistaSaveFileDialog saveFileDialog = new()
+            {
+                Filter = "Image files (*.png;*.jpeg)|*.png;*.jpeg|All files (*.*)|*.*",
+                DefaultExt = "png",
+                FileName = $"ScreenSketch - {DateTime.Now:yyyy-MM-dd - HH:mm:ss.FF}",
+                AddExtension = true
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                string filename = saveFileDialog.FileName;
+                using FileStream? fileStream = new(filename, FileMode.Create);
+                encoder.Save(fileStream);
+            }
         }
     }
 }
