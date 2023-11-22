@@ -6,13 +6,12 @@
         xmlns:local="clr-namespace:ScreenSketcher"
         mc:Ignorable="d"
         WindowStyle="None"
-        WindowState="Maximized"
         Topmost="True"
         Visibility="Hidden"
         AllowsTransparency="True"
         Background="Transparent">
     <Grid>
-        <Border x:Name="mainBorder" BorderBrush="Red" BorderThickness="2" Margin="10" Background="#01FFFFFF">
+        <Border x:Name="mainBorder" BorderBrush="Red" BorderThickness="2" Background="#01FFFFFF">
             <InkCanvas Name="drawingInkCanvas" Background="#01FFFFFF" Focusable="False" Cursor="Pen">
             </InkCanvas>
         </Border>

@@ -69,6 +69,11 @@ namespace ScreenSketcher
         {
             InitializeComponent();
 
+            this.Left = 0;
+            this.Top = 0;
+            this.Width = Screen.PrimaryScreen.Bounds.Width;
+            this.Height = Screen.PrimaryScreen.Bounds.Height;
+
             SetDrawingPointDimensions();
 
             this.KeyDown += KeyEvents_Shortcuts;
@@ -80,9 +85,6 @@ namespace ScreenSketcher
             // Check if CTRL key is held down
             if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                // Execute this code only if CTRL is held down
-
-                // Increase or decrease _scrollValue based on the Delta value
                 ScrollValue += e.Delta > 0 ? 5 : -5;
                 SetDrawingPointDimensions();
 
