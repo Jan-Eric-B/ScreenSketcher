@@ -11,8 +11,15 @@
         Visibility="Hidden"
         AllowsTransparency="True"
         Background="Transparent">
-    <Border x:Name="mainBorder" BorderBrush="Red" BorderThickness="2" Margin="10" Background="#01FFFFFF">
-        <InkCanvas Name="drawingInkCanvas" Background="#01FFFFFF" Focusable="False" Cursor="Pen">
-        </InkCanvas>
-    </Border>
+    <Grid>
+        <Border x:Name="mainBorder" BorderBrush="Red" BorderThickness="2" Margin="10" Background="#01FFFFFF">
+            <InkCanvas Name="drawingInkCanvas" Background="#01FFFFFF" Focusable="False" Cursor="Pen">
+            </InkCanvas>
+        </Border>
+        <!-- Label to display the integer value -->
+        <Label Name="MyLabel" HorizontalAlignment="Right" VerticalAlignment="Top" 
+               Background="Transparent" Foreground="Red" Padding="5" Margin="10">
+            Scroll Value: 0
+        </Label>
+    </Grid>
 </Window>

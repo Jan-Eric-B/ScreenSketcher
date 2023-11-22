@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,20 +62,49 @@ namespace ScreenSketcher
         private SolidColorBrush OriginalBorderBrush = new();
         private Thickness OriginalBorderThickness = new();
 
-
+        private int ScrollValue = 20;
+        private int DrawingAttributesDimension;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            drawingInkCanvas.DefaultDrawingAttributes.Color = Colors.Blue;
-            drawingInkCanvas.DefaultDrawingAttributes.Width = 5;
-            drawingInkCanvas.DefaultDrawingAttributes.Height = 5;
-            drawingInkCanvas.EditingMode = InkCanvasEditingMode.Ink;
+            SetDrawingPointDimensions();
 
             this.KeyDown += KeyEvents_Shortcuts;
-
+            this.MouseWheel += OnMouseWheelScrolled;
         }
+
+        private void OnMouseWheelScrolled(object sender, MouseWheelEventArgs e)
+        {
+            // Check if CTRL key is held down
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                // Execute this code only if CTRL is held down
+
+                // Increase or decrease _scrollValue based on the Delta value
+                ScrollValue += e.Delta > 0 ? 5 : -5;
+                SetDrawingPointDimensions();
+
+                //TEMP
+                MyLabel.Content = $"Scroll Value: {ScrollValue}";
+            }
+        }
+
+        private void SetDrawingPointDimensions()
+        {
+            DrawingAttributesDimension = ScrollValue;
+            // sets the height and width of the drawing point.
+            if (DrawingAttributesDimension < 5) DrawingAttributesDimension = 5;
+            if (DrawingAttributesDimension > 500) DrawingAttributesDimension = 500;
+
+            drawingInkCanvas.DefaultDrawingAttributes.Color = Colors.Blue;
+            drawingInkCanvas.DefaultDrawingAttributes.Width = DrawingAttributesDimension;
+            drawingInkCanvas.DefaultDrawingAttributes.Height = DrawingAttributesDimension;
+            drawingInkCanvas.EditingMode = InkCanvasEditingMode.Ink;
+        }
+
+
 
         protected override void OnClosing(CancelEventArgs e)
         {
@@ -82,8 +112,6 @@ namespace ScreenSketcher
             e.Cancel = true; // Prevents the window from closing
             this.Visibility = Visibility.Hidden; // Hide the window
         }
-
-
 
         private void KeyEvents_Shortcuts(object sender, System.Windows.Input.KeyEventArgs e)
         {
