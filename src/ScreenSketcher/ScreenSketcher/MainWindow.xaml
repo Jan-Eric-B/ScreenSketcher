@@ -16,7 +16,7 @@
             </InkCanvas>
         </Border>
         <!-- Label to display the integer value -->
-        <Label Name="MyLabel" HorizontalAlignment="Right" VerticalAlignment="Top" 
+        <Label Name="MyLabel" HorizontalAlignment="Right" VerticalAlignment="Top"
                Background="Transparent" Foreground="Red" Padding="5" Margin="10">
             Scroll Value: 0
         </Label>

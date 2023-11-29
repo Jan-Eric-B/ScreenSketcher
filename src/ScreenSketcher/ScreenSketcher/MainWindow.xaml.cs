@@ -164,11 +164,11 @@ namespace ScreenSketcher
             mainBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
             mainBorder.BorderThickness = new Thickness(0);
 
-            // Allow the UI to update
-            await Task.Delay(100);  // This delay might need adjustment
-
             // Capture the screen now that the border is invisible
-            CaptureScreen();  // This is your existing method to capture the screen
+            CaptureScreen(); // This is your existing method to capture the screen
+
+            // Immediately hide the window after capturing the screen
+            ToggleVisibility();
 
             // Restore original border properties after the screenshot is taken
             mainBorder.BorderBrush = OriginalBorderBrush;
@@ -223,6 +223,7 @@ namespace ScreenSketcher
             SaveFile(encoder);
 
             DeleteObject(hBitmap);
+
         }
 
 
