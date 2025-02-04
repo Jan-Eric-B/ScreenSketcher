@@ -5,8 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ScreenSketcher"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        WindowStyle="None"
+        Topmost="True"
+        Visibility="Hidden"
+        AllowsTransparency="True"
+        Background="Transparent">
+    <Window.Resources>
+    </Window.Resources>
     <Grid>
-
+        <Border x:Name="mainBorder" BorderBrush="Red" BorderThickness="2" Background="#01FFFFFF">
+            <InkCanvas Name="drawingInkCanvas" Background="#01FFFFFF" Focusable="False" Cursor="Pen" />
+        </Border>
     </Grid>
 </Window>
