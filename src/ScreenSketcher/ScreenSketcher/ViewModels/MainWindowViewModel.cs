@@ -1,11 +1,12 @@
-﻿using MvvmHelpers;
-using MvvmHelpers.Commands;
+﻿using MvvmHelpers.Commands;
 using System.Windows;
+using System.Windows.Ink;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace ScreenSketcher.ViewModels
 {
-    internal class MainWindowViewModel : ObservableObject
+    internal class MainWindowViewModel : ViewModelBase
     {
         #region Singleton
 
@@ -14,7 +15,9 @@ namespace ScreenSketcher.ViewModels
 
         #endregion Singleton
 
-        #region Window Properties
+        #region Properties
+
+        #region Window
 
         private Visibility _visibility;
         private WindowState _windowState;
@@ -28,13 +31,49 @@ namespace ScreenSketcher.ViewModels
         public double Width { get => _width; set => SetProperty(ref _width, value); }
         public double Height { get => _height; set => SetProperty(ref _height, value); }
 
-        #endregion Window Properties
+        #endregion Window
+
+        private int _drawingThickness = 20;
+
+        public int DrawingThickness
+        {
+            get => _drawingThickness;
+            set
+            {
+                if (SetProperty(ref _drawingThickness, Math.Max(1, Math.Min(500, value))))
+                {
+                    OnPropertyChanged(nameof(DrawingAttributes));
+                }
+            }
+        }
+
+        private DrawingAttributes _drawingAttributes;
+
+        public DrawingAttributes DrawingAttributes
+        {
+            get
+            {
+                _drawingAttributes = new DrawingAttributes
+                {
+                    Color = Colors.Red,
+                    Width = DrawingThickness,
+                    Height = DrawingThickness
+                };
+                return _drawingAttributes;
+            }
+        }
+
+        public StrokeCollection Strokes { get; } = new StrokeCollection();
+
+        #endregion Properties
 
         #region Commands
 
         public Command EscapeCommand { get; private set; }
         public Command SaveCommand { get; private set; }
         public Command ResetCommand { get; private set; }
+
+        public Command MouseWheelCommand { get; private set; }
 
         #endregion Commands
 
@@ -44,17 +83,18 @@ namespace ScreenSketcher.ViewModels
         {
             InitializeWindow();
             InitializeCommands();
-
-            _visibility = Visibility.Hidden;
-            _windowState = WindowState.Normal;
-            _left = 0;
-            _top = 0;
         }
 
         private void InitializeWindow()
         {
+            _left = 0;
+            _top = 0;
+
             Width = Screen.PrimaryScreen?.Bounds.Width ?? 1920;
             Height = Screen.PrimaryScreen?.Bounds.Height ?? 1080;
+
+            _visibility = Visibility.Hidden;
+            _windowState = WindowState.Normal;
         }
 
         private void InitializeCommands()
@@ -65,8 +105,11 @@ namespace ScreenSketcher.ViewModels
             // [CTRL + S] Save Screenshot
             SaveCommand = new Command(SaveScreenshot);
 
-            // [CTRL + N] Reset drawing
+            // [CTRL + N] Reset Drawing
             ResetCommand = new Command(ResetDrawing);
+
+            // Control Brush Size
+            MouseWheelCommand = new Command<MouseWheelEventArgs>(HandleMouseWheelScrolled);
         }
 
         #endregion Constructor
@@ -85,7 +128,7 @@ namespace ScreenSketcher.ViewModels
 
         private void ResetDrawing()
         {
-            // TODO Reset Drawing
+            Strokes.Clear();
         }
 
         private void ToggleVisibility()
@@ -106,19 +149,13 @@ namespace ScreenSketcher.ViewModels
 
         #region Event Handlers
 
-        private void HandleKeyDown(System.Windows.Input.KeyEventArgs e)
-        {
-            // TODO Key Shift -> Enable Straigt line
-        }
-
-        private void HandleKeyUp(System.Windows.Input.KeyEventArgs e)
-        {
-            // TODO Key Shift -> Disable Straigt line
-        }
-
         private void HandleMouseWheelScrolled(MouseWheelEventArgs args)
         {
-            // TODO Set Drawing Point Dimensions (if CTRL is held down)
+            // Increases and decreases drawing thickness
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                DrawingThickness += args.Delta > 0 ? 1 : -1;
+            }
         }
 
         #endregion Event Handlers
