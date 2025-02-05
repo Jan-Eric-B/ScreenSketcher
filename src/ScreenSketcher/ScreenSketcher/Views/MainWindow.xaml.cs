@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using ScreenSketcher.ViewModels;
+using System.Runtime.InteropServices;
 using System.Windows;
 
 namespace ScreenSketcher
@@ -38,6 +39,7 @@ namespace ScreenSketcher
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = MainWindowViewModel.This;
         }
     }
 }
