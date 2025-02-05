@@ -1,9 +1,8 @@
 ﻿<Window x:Class="ScreenSketcher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ScreenSketcher"
         xmlns:viewModels="clr-namespace:ScreenSketcher.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel, IsDesignTimeCreatable=True}"
@@ -11,12 +10,21 @@
         Topmost="True"
         Visibility="Hidden"
         AllowsTransparency="True"
-        Background="Transparent">
+        Background="Transparent"
+        Left="{Binding Left}"
+        Top="{Binding Top}"
+        Width="{Binding Width}"
+        Height="{Binding Height}">
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding KeyDownCommand}" />
+        <KeyBinding Command="{Binding KeyUpCommand}" />
+        <MouseBinding Command="{Binding MouseWheelCommand}" />
+    </Window.InputBindings>
     <Window.Resources>
     </Window.Resources>
     <Grid>
-        <Border x:Name="mainBorder" BorderBrush="Red" BorderThickness="2" Background="#01FFFFFF">
-            <InkCanvas Name="drawingInkCanvas" Background="#01FFFFFF" Focusable="False" Cursor="Pen" />
+        <Border x:Name="brdMain" BorderBrush="Red" BorderThickness="2" Background="#01FFFFFF">
+            <InkCanvas Name="ikcMain" Background="#01FFFFFF" Focusable="False" Cursor="Pen" />
         </Border>
     </Grid>
 </Window>
