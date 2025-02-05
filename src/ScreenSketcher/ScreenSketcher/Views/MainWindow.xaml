@@ -15,16 +15,23 @@
         <KeyBinding Key="Escape" Command="{Binding EscapeCommand}" />
         <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
         <KeyBinding Key="N" Modifiers="Control" Command="{Binding ResetCommand}" />
+        <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}" />
+        <KeyBinding Key="Y" Modifiers="Control" Command="{Binding RedoCommand}" />
     </Window.InputBindings>
     <Window.Resources>
     </Window.Resources>
     <Grid>
         <!-- Outer Border -->
-        <Border x:Name="brdMain" BorderBrush="Red" BorderThickness="2" Background="#01FFFFFF">
-            <InkCanvas Name="ikcMain" Background="#01FFFFFF" Focusable="False" Cursor="Pen" Strokes="{Binding Strokes}" DefaultDrawingAttributes="{Binding DrawingAttributes}">
+        <Border x:Name="brdMain" BorderBrush="{Binding BorderColor}" BorderThickness="{Binding BorderThickness}" Background="{Binding WindowBackgroundColor}">
+            <InkCanvas Name="ikcMain" Background="{Binding WindowBackgroundColor}" Focusable="False" Cursor="Pen" Strokes="{Binding Strokes}" DefaultDrawingAttributes="{Binding DrawingAttributes}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="MouseWheel">
-                        <i:InvokeCommandAction Command="{Binding MouseWheelCommand}" PassEventArgsToCommand="True" />
+                        <i:InvokeCommandAction Command="{Binding MouseWheelCommand}"
+                                 PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="StrokeCollected">
+                        <i:InvokeCommandAction Command="{Binding StrokeCollectedCommand}"
+                                 PassEventArgsToCommand="True" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </InkCanvas>

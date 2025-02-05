@@ -1,8 +1,12 @@
 ﻿using MvvmHelpers.Commands;
+using ScreenSketcher.Services;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace ScreenSketcher.ViewModels
 {
@@ -20,16 +24,65 @@ namespace ScreenSketcher.ViewModels
         #region Window
 
         private Visibility _visibility;
+        public Visibility Visibility { get => _visibility; set => SetProperty(ref _visibility, value); }
+
+        private Visibility _toolboxVisibility;
+        public Visibility ToolboxVisibility { get => _toolboxVisibility; set => SetProperty(ref _toolboxVisibility, value); }
+
         private WindowState _windowState;
+        public WindowState WindowState { get => _windowState; set => SetProperty(ref _windowState, value); }
+
         private double _left, _top;
         private double _width, _height;
-
-        public Visibility Visibility { get => _visibility; set => SetProperty(ref _visibility, value); }
-        public WindowState WindowState { get => _windowState; set => SetProperty(ref _windowState, value); }
         public double Left { get => _left; set => SetProperty(ref _left, value); }
         public double Top { get => _top; set => SetProperty(ref _top, value); }
         public double Width { get => _width; set => SetProperty(ref _width, value); }
         public double Height { get => _height; set => SetProperty(ref _height, value); }
+
+        private SolidColorBrush _borderColor = new(Colors.Red);
+
+        public SolidColorBrush BorderColor
+        {
+            get
+            {
+                return _borderColor;
+            }
+            set
+            {
+                if (SetProperty(ref _borderColor, value))
+                {
+                    OnPropertyChanged(nameof(BorderColor));
+                }
+            }
+        }
+
+        private int _borderThickness = 2;
+
+        public int BorderThickness
+        {
+            get => _borderThickness;
+            set
+            {
+                if (SetProperty(ref _borderThickness, value))
+                {
+                    OnPropertyChanged(nameof(BorderThickness));
+                }
+            }
+        }
+
+        private System.Windows.Media.Brush _windowBackgroundColor = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#01FFFFFF"));
+
+        public System.Windows.Media.Brush WindowBackgroundColor
+        {
+            get => _windowBackgroundColor;
+            set
+            {
+                if (SetProperty(ref _windowBackgroundColor, value))
+                {
+                    OnPropertyChanged(nameof(WindowBackgroundColor));
+                }
+            }
+        }
 
         #endregion Window
 
@@ -63,15 +116,21 @@ namespace ScreenSketcher.ViewModels
             }
         }
 
-        public StrokeCollection Strokes { get; } = new StrokeCollection();
+        private readonly Stack<StrokeCollection> _undoStack = new();
+        private readonly Stack<StrokeCollection> _redoStack = new();
+        public StrokeCollection Strokes { get; } = [];
 
         #endregion Properties
 
         #region Commands
 
         public Command EscapeCommand { get; private set; }
-        public Command SaveCommand { get; private set; }
+        public AsyncCommand SaveCommand { get; private set; }
         public Command ResetCommand { get; private set; }
+
+        public Command<InkCanvasStrokeCollectedEventArgs> StrokeCollectedCommand { get; private set; }
+        public Command UndoCommand { get; private set; }
+        public Command RedoCommand { get; private set; }
 
         public Command MouseWheelCommand { get; private set; }
 
@@ -90,8 +149,9 @@ namespace ScreenSketcher.ViewModels
             _left = 0;
             _top = 0;
 
-            Width = Screen.PrimaryScreen?.Bounds.Width ?? 1920;
-            Height = Screen.PrimaryScreen?.Bounds.Height ?? 1080;
+            (int width, int height) = Win32ScreenCaptureService.GetScreenSize();
+            Width = width;
+            Height = height;
 
             _visibility = Visibility.Hidden;
             _windowState = WindowState.Normal;
@@ -103,10 +163,14 @@ namespace ScreenSketcher.ViewModels
             EscapeCommand = new Command(CloseWindow);
 
             // [CTRL + S] Save Screenshot
-            SaveCommand = new Command(SaveScreenshot);
+            SaveCommand = new AsyncCommand(SaveScreenshotAsync);
 
             // [CTRL + N] Reset Drawing
             ResetCommand = new Command(ResetDrawing);
+
+            StrokeCollectedCommand = new Command<InkCanvasStrokeCollectedEventArgs>(OnStrokeCollected);
+            UndoCommand = new Command(Undo, () => _undoStack.Count != 0);
+            RedoCommand = new Command(Redo, () => _redoStack.Count != 0);
 
             // Control Brush Size
             MouseWheelCommand = new Command<MouseWheelEventArgs>(HandleMouseWheelScrolled);
@@ -121,9 +185,32 @@ namespace ScreenSketcher.ViewModels
             ToggleVisibility();
         }
 
-        private void SaveScreenshot()
+        private async Task SaveScreenshotAsync()
         {
-            // TODO Save Screenshot
+            SolidColorBrush? originalBorderColor = BorderColor;
+            int originalBorderThickness = BorderThickness;
+            Visibility originalToolboxVisibility = ToolboxVisibility;
+
+            try
+            {
+                BorderColor = new SolidColorBrush(Colors.Transparent);
+                BorderThickness = 0;
+                ToolboxVisibility = Visibility.Hidden;
+
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
+                await Task.Delay(50);
+
+                BitmapSource screenshot = Win32ScreenCaptureService.CaptureScreen();
+                await FileSystemInfoService.SaveImageAsync(screenshot);
+            }
+            finally
+            {
+                ResetDrawing();
+                ToggleVisibility();
+                BorderColor = originalBorderColor;
+                BorderThickness = originalBorderThickness;
+                ToolboxVisibility = originalToolboxVisibility;
+            }
         }
 
         private void ResetDrawing()
@@ -145,10 +232,6 @@ namespace ScreenSketcher.ViewModels
             }
         }
 
-        #endregion Methods
-
-        #region Event Handlers
-
         private void HandleMouseWheelScrolled(MouseWheelEventArgs args)
         {
             // Increases and decreases drawing thickness
@@ -158,6 +241,46 @@ namespace ScreenSketcher.ViewModels
             }
         }
 
-        #endregion Event Handlers
+        #region Undo/Redo Functions
+
+        private void Undo()
+        {
+            if (_undoStack.Count == 0) return;
+
+            // Save current for redo
+            _redoStack.Push(new StrokeCollection(Strokes));
+
+            // Restore previous
+            Strokes.Clear();
+            foreach (Stroke stroke in _undoStack.Pop())
+            {
+                Strokes.Add(stroke);
+            }
+        }
+
+        private void Redo()
+        {
+            if (_redoStack.Count == 0) return;
+
+            // Save current
+            _undoStack.Push(new StrokeCollection(Strokes));
+
+            // Restore undone state
+            Strokes.Clear();
+            foreach (Stroke stroke in _redoStack.Pop())
+            {
+                Strokes.Add(stroke);
+            }
+        }
+
+        private void OnStrokeCollected(InkCanvasStrokeCollectedEventArgs e)
+        {
+            _undoStack.Push(new StrokeCollection(Strokes.Take(Strokes.Count - 1)));
+            _redoStack.Clear();
+        }
+
+        #endregion Undo/Redo Functions
+
+        #endregion Methods
     }
 }
