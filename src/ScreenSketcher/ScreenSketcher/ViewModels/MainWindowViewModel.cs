@@ -1,5 +1,6 @@
 ﻿using MvvmHelpers;
 using MvvmHelpers.Commands;
+using System.Windows;
 using System.Windows.Input;
 
 namespace ScreenSketcher.ViewModels
@@ -15,9 +16,13 @@ namespace ScreenSketcher.ViewModels
 
         #region Window Properties
 
+        private Visibility _visibility;
+        private WindowState _windowState;
         private double _left, _top;
         private double _width, _height;
 
+        public Visibility Visibility { get => _visibility; set => SetProperty(ref _visibility, value); }
+        public WindowState WindowState { get => _windowState; set => SetProperty(ref _windowState, value); }
         public double Left { get => _left; set => SetProperty(ref _left, value); }
         public double Top { get => _top; set => SetProperty(ref _top, value); }
         public double Width { get => _width; set => SetProperty(ref _width, value); }
@@ -27,9 +32,9 @@ namespace ScreenSketcher.ViewModels
 
         #region Commands
 
-        public ICommand? KeyDownCommand { get; private set; }
-        public ICommand? KeyUpCommand { get; private set; }
-        public ICommand? MouseWheelCommand { get; private set; }
+        public Command EscapeCommand { get; private set; }
+        public Command SaveCommand { get; private set; }
+        public Command ResetCommand { get; private set; }
 
         #endregion Commands
 
@@ -39,6 +44,11 @@ namespace ScreenSketcher.ViewModels
         {
             InitializeWindow();
             InitializeCommands();
+
+            _visibility = Visibility.Hidden;
+            _windowState = WindowState.Normal;
+            _left = 0;
+            _top = 0;
         }
 
         private void InitializeWindow()
@@ -49,25 +59,66 @@ namespace ScreenSketcher.ViewModels
 
         private void InitializeCommands()
         {
-            KeyDownCommand = new Command<System.Windows.Input.KeyEventArgs>(OnKeyDown);
-            KeyUpCommand = new Command<System.Windows.Input.KeyEventArgs>(OnKeyUp);
-            MouseWheelCommand = new Command<MouseWheelEventArgs>(OnMouseWheelScrolled);
+            // [ESC] Close window
+            EscapeCommand = new Command(CloseWindow);
+
+            // [CTRL + S] Save Screenshot
+            SaveCommand = new Command(SaveScreenshot);
+
+            // [CTRL + N] Reset drawing
+            ResetCommand = new Command(ResetDrawing);
         }
 
         #endregion Constructor
 
+        #region Methods
+
+        private void CloseWindow()
+        {
+            ToggleVisibility();
+        }
+
+        private void SaveScreenshot()
+        {
+            // TODO Save Screenshot
+        }
+
+        private void ResetDrawing()
+        {
+            // TODO Reset Drawing
+        }
+
+        private void ToggleVisibility()
+        {
+            if (Visibility == Visibility.Visible)
+            {
+                Visibility = Visibility.Hidden;
+                // TODO Reset Drawing
+            }
+            else
+            {
+                Visibility = Visibility.Visible;
+                WindowState = WindowState.Normal;
+            }
+        }
+
+        #endregion Methods
+
         #region Event Handlers
 
-        private void OnKeyDown(System.Windows.Input.KeyEventArgs e)
+        private void HandleKeyDown(System.Windows.Input.KeyEventArgs e)
         {
+            // TODO Key Shift -> Enable Straigt line
         }
 
-        private void OnKeyUp(System.Windows.Input.KeyEventArgs e)
+        private void HandleKeyUp(System.Windows.Input.KeyEventArgs e)
         {
+            // TODO Key Shift -> Disable Straigt line
         }
 
-        private void OnMouseWheelScrolled(MouseWheelEventArgs args)
+        private void HandleMouseWheelScrolled(MouseWheelEventArgs args)
         {
+            // TODO Set Drawing Point Dimensions (if CTRL is held down)
         }
 
         #endregion Event Handlers
