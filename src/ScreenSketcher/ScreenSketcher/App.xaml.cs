@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using ScreenSketcher.ViewModels;
+using System.Windows;
 
 namespace ScreenSketcher
 {
@@ -48,6 +49,7 @@ namespace ScreenSketcher
 
         private void MainWindow_Open()
         {
+            MainWindowViewModel.This.ResetDrawing();
             mainWindow.Visibility = Visibility.Visible;
         }
 

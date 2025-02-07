@@ -1,4 +1,5 @@
 ﻿using MvvmHelpers.Commands;
+using ScreenSketcher.Enums;
 using ScreenSketcher.Services;
 using System.Windows;
 using System.Windows.Controls;
@@ -95,7 +96,11 @@ namespace ScreenSketcher.ViewModels
             {
                 if (SetProperty(ref _drawingThickness, Math.Max(1, Math.Min(500, value))))
                 {
-                    OnPropertyChanged(nameof(DrawingAttributes));
+                    UpdateDrawingAttributes();
+                    if (CurrentTool == DrawingTool.Eraser)
+                    {
+                        EraserShape = new RectangleStylusShape(DrawingThickness, DrawingThickness);
+                    }
                 }
             }
         }
@@ -104,21 +109,49 @@ namespace ScreenSketcher.ViewModels
 
         public DrawingAttributes DrawingAttributes
         {
-            get
-            {
-                _drawingAttributes = new DrawingAttributes
-                {
-                    Color = Colors.Red,
-                    Width = DrawingThickness,
-                    Height = DrawingThickness
-                };
-                return _drawingAttributes;
-            }
+            get => _drawingAttributes;
+            private set => SetProperty(ref _drawingAttributes, value);
         }
 
         private readonly Stack<StrokeCollection> _undoStack = new();
         private readonly Stack<StrokeCollection> _redoStack = new();
         public StrokeCollection Strokes { get; } = [];
+
+        private DrawingTool _currentTool = DrawingTool.Brush;
+
+        public DrawingTool CurrentTool
+        {
+            get => _currentTool;
+            set
+            {
+                if (SetProperty(ref _currentTool, value))
+                {
+                    UpdateDrawingAttributes();
+                    OnPropertyChanged(nameof(CanvasEditingMode));
+                }
+            }
+        }
+
+        private InkCanvasEditingMode _canvasEditingMode = InkCanvasEditingMode.Ink;
+
+        public InkCanvasEditingMode CanvasEditingMode
+        {
+            get => _canvasEditingMode;
+            set => SetProperty(ref _canvasEditingMode, value);
+        }
+
+        private RectangleStylusShape _eraserShape = new(20, 20);
+
+        public RectangleStylusShape EraserShape
+        {
+            get => _eraserShape;
+            set
+            {
+                _eraserShape = value;
+                UpdateDrawingAttributes();
+                OnPropertyChanged(nameof(EraserShape));
+            }
+        }
 
         #endregion Properties
 
@@ -134,6 +167,8 @@ namespace ScreenSketcher.ViewModels
 
         public Command MouseWheelCommand { get; private set; }
 
+        public Command<DrawingTool> OnToolSelected { get; private set; }
+
         #endregion Commands
 
         #region Constructor
@@ -142,6 +177,7 @@ namespace ScreenSketcher.ViewModels
         {
             InitializeWindow();
             InitializeCommands();
+            InitializeTools();
         }
 
         private void InitializeWindow()
@@ -174,11 +210,52 @@ namespace ScreenSketcher.ViewModels
 
             // Control Brush Size
             MouseWheelCommand = new Command<MouseWheelEventArgs>(HandleMouseWheelScrolled);
+
+            OnToolSelected = new Command<DrawingTool>(tool => CurrentTool = tool);
+        }
+
+        private void InitializeTools()
+        {
+            UpdateDrawingAttributes();
+            EraserShape = new RectangleStylusShape(DrawingThickness, DrawingThickness);
         }
 
         #endregion Constructor
 
         #region Methods
+
+        private void UpdateDrawingAttributes()
+        {
+            switch (CurrentTool)
+            {
+                case DrawingTool.Brush:
+                    CanvasEditingMode = InkCanvasEditingMode.Ink;
+                    DrawingAttributes = new DrawingAttributes
+                    {
+                        Color = Colors.Red,
+                        Width = DrawingThickness,
+                        Height = DrawingThickness,
+                        StylusTip = StylusTip.Ellipse
+                    };
+                    break;
+
+                case DrawingTool.Highlighter:
+                    CanvasEditingMode = InkCanvasEditingMode.Ink;
+                    DrawingAttributes = new DrawingAttributes
+                    {
+                        Color = Colors.Red,
+                        Width = DrawingThickness * 0.5,
+                        Height = DrawingThickness * 2,
+                        StylusTip = StylusTip.Rectangle
+                    };
+                    break;
+
+                case DrawingTool.Eraser:
+                    CanvasEditingMode = InkCanvasEditingMode.EraseByPoint;
+                    break;
+            }
+            OnPropertyChanged(nameof(DrawingAttributes));
+        }
 
         private void CloseWindow()
         {
@@ -206,14 +283,14 @@ namespace ScreenSketcher.ViewModels
             finally
             {
                 ResetDrawing();
-                ToggleVisibility();
                 BorderColor = originalBorderColor;
                 BorderThickness = originalBorderThickness;
                 ToolboxVisibility = originalToolboxVisibility;
+                ToggleVisibility();
             }
         }
 
-        private void ResetDrawing()
+        public void ResetDrawing()
         {
             Strokes.Clear();
         }
@@ -222,11 +299,12 @@ namespace ScreenSketcher.ViewModels
         {
             if (Visibility == Visibility.Visible)
             {
+                ResetDrawing();
                 Visibility = Visibility.Hidden;
-                // TODO Reset Drawing
             }
             else
             {
+                ResetDrawing();
                 Visibility = Visibility.Visible;
                 WindowState = WindowState.Normal;
             }
