@@ -10,7 +10,7 @@ namespace ScreenSketcher.Services
     internal static class FileSystemInfoService
     {
         /// <summary>
-        /// Shos save dialog and saves image
+        /// Show save dialog and saves image
         /// </summary>
         public static async Task SaveImageAsync(BitmapSource image)
         {

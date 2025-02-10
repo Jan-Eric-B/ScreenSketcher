@@ -105,6 +105,20 @@ namespace ScreenSketcher.ViewModels
             }
         }
 
+        private System.Windows.Media.Color _currentColor = Colors.Red;
+
+        public System.Windows.Media.Color CurrentColor
+        {
+            get => _currentColor;
+            set
+            {
+                if (SetProperty(ref _currentColor, value))
+                {
+                    UpdateDrawingAttributes();
+                }
+            }
+        }
+
         private DrawingAttributes _drawingAttributes;
 
         public DrawingAttributes DrawingAttributes
@@ -232,10 +246,11 @@ namespace ScreenSketcher.ViewModels
                     CanvasEditingMode = InkCanvasEditingMode.Ink;
                     DrawingAttributes = new DrawingAttributes
                     {
-                        Color = Colors.Red,
+                        Color = CurrentColor,
                         Width = DrawingThickness,
                         Height = DrawingThickness,
-                        StylusTip = StylusTip.Ellipse
+                        StylusTip = StylusTip.Ellipse,
+                        IsHighlighter = false
                     };
                     break;
 
@@ -243,10 +258,11 @@ namespace ScreenSketcher.ViewModels
                     CanvasEditingMode = InkCanvasEditingMode.Ink;
                     DrawingAttributes = new DrawingAttributes
                     {
-                        Color = Colors.Red,
+                        Color = CurrentColor,
                         Width = DrawingThickness * 0.5,
                         Height = DrawingThickness * 2,
-                        StylusTip = StylusTip.Rectangle
+                        StylusTip = StylusTip.Rectangle,
+                        IsHighlighter = false
                     };
                     break;
 
