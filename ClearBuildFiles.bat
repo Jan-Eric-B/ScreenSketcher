@@ -15,7 +15,7 @@ ECHO OBJ folder deleted.
 ECHO.
 
 ECHO Deleting the project .vs folder...
-RMDIR /S /Q ".\src\ScreenSketcher\.vs"
+RMDIR /S /Q ".\src\.vs"
 ECHO Project .vs folder deleted.
 ECHO.
 
@@ -31,4 +31,3 @@ ECHO.
 
 ECHO All specified directories have been deleted.
 ECHO.
-pause
