@@ -519,3 +519,4 @@ MigrationBackup/
 
 # Since there are multiple workflows, uncomment next line to ignore bower_components
 # Visual Studio cache files
+/setup_output
