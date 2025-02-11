@@ -2,7 +2,7 @@
 #define MyAppVersion "0.0.1"
 #define MyAppPublisher "J-E"
 #define MyAppExeName "ScreenSketcher.exe"
-#define MyAppIcon "..\src\ScreenSketcher\ScreenSketcher\Resources\Icons\Icon.ico"
+#define MyAppIcon "..\src\ScreenSketcher\Resources\Icons\Icon.ico"
 #define MyAppId "com.je.screensketcher"
 
 [Setup]
@@ -30,15 +30,15 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "startup"; Description: "Start automatically at Windows startup"; GroupDescription: "Windows Startup";
 
 [Files]
-Source: "..\src\ScreenSketcher\ScreenSketcher\bin\Release\net8.0-windows\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\src\ScreenSketcher\ScreenSketcher\bin\Release\net8.0-windows\ColorPicker.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\src\ScreenSketcher\ScreenSketcher\bin\Release\net8.0-windows\Microsoft.Xaml.Behaviors.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\src\ScreenSketcher\ScreenSketcher\bin\Release\net8.0-windows\MvvmHelpers.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\src\ScreenSketcher\ScreenSketcher\bin\Release\net8.0-windows\Ookii.Dialogs.Wpf.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\src\ScreenSketcher\ScreenSketcher\bin\Release\net8.0-windows\ScreenSketcher.deps.json"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\src\ScreenSketcher\ScreenSketcher\bin\Release\net8.0-windows\ScreenSketcher.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\src\ScreenSketcher\ScreenSketcher\bin\Release\net8.0-windows\ScreenSketcher.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\src\ScreenSketcher\ScreenSketcher\Resources\Icons\Icon.ico"; DestDir: "{app}\Resources\Icons"; Flags: ignoreversion
+Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\ColorPicker.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\Microsoft.Xaml.Behaviors.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\MvvmHelpers.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\Ookii.Dialogs.Wpf.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\ScreenSketcher.deps.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\ScreenSketcher.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\ScreenSketcher.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\ScreenSketcher\Resources\Icons\Icon.ico"; DestDir: "{app}\Resources\Icons"; Flags: ignoreversion
 
 [Dirs]
 Name: "{app}\Resources"
