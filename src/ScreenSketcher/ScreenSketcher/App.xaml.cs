@@ -1,5 +1,7 @@
 ﻿using ScreenSketcher.ViewModels;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 
 namespace ScreenSketcher
 {
@@ -9,6 +11,20 @@ namespace ScreenSketcher
         private readonly NotifyIcon _notifyIcon;
         private readonly MainWindow _mainWindow;
         private readonly Icon _trayIcon;
+        private readonly HwndSource _source;
+        private const int HOTKEY_ID = 9000;
+
+        [DllImport("User32.dll", SetLastError = true)]
+        private static extern bool RegisterHotKey(
+            [In] IntPtr hWnd,
+            [In] int id,
+            [In] uint fsModifiers,
+            [In] uint vk);
+
+        [DllImport("User32.dll", SetLastError = true)]
+        private static extern bool UnregisterHotKey(
+            [In] IntPtr hWnd,
+            [In] int id);
 
         public App()
         {
@@ -18,8 +34,68 @@ namespace ScreenSketcher
             _notifyIcon = CreateNotifyIcon();
             _notifyIcon.MouseDown += OnNotifyIconMouseDown;
 
+            // Create message-only window for hotkey registration
+            WindowInteropHelper? wndHelper = new(_mainWindow);
+            HwndSource? source = HwndSource.FromHwnd(wndHelper.EnsureHandle());
+            _source = source;
+            source.AddHook(HwndHook);
+
+            RegisterHotKey();
             MainWindow_Hide();
         }
+
+        #region Hotkey
+
+        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            const int WM_HOTKEY = 0x0312;
+            switch (msg)
+            {
+                case WM_HOTKEY:
+                    switch (wParam.ToInt32())
+                    {
+                        case HOTKEY_ID:
+                            OnHotKeyPressed();
+                            handled = true;
+                            break;
+                    }
+                    break;
+            }
+            return IntPtr.Zero;
+        }
+
+        private void RegisterHotKey()
+        {
+            WindowInteropHelper? wndHelper = new(_mainWindow);
+
+            const uint VK_F8 = 0x77;  // F8
+            const uint MOD_CTRL = 0x0002; // CTRL
+
+            if (!RegisterHotKey(wndHelper.Handle, HOTKEY_ID, MOD_CTRL, VK_F8))
+            {
+                // handle error
+                System.Windows.MessageBox.Show("Failed to register hotkey (Ctrl+F8). The application may not work as expected.");
+            }
+        }
+
+        private void UnregisterHotKey()
+        {
+            if (_mainWindow != null)
+            {
+                WindowInteropHelper? wndHelper = new(_mainWindow);
+                UnregisterHotKey(wndHelper.Handle, HOTKEY_ID);
+            }
+        }
+
+        private void OnHotKeyPressed()
+        {
+            if (_mainWindow.Visibility == Visibility.Hidden)
+            {
+                MainWindow_Open();
+            }
+        }
+
+        #endregion Hotkey
 
         #region NotifyIcon
 
@@ -32,7 +108,7 @@ namespace ScreenSketcher
             {
                 Items =
                 {
-                    new ToolStripMenuItem("Open", null, (s, ev) => MainWindow_Open()),
+                    new ToolStripMenuItem("Open (CTRL + F8)", null, (s, ev) => MainWindow_Open()),
                     new ToolStripMenuItem("Close", null, (s, ev) => Current.Shutdown())
                 }
             },
@@ -75,6 +151,8 @@ namespace ScreenSketcher
         {
             if (!_disposed && disposing)
             {
+                UnregisterHotKey();
+                _source?.Dispose();
                 _notifyIcon.Dispose();
                 _trayIcon.Dispose();
                 _mainWindow.Close();

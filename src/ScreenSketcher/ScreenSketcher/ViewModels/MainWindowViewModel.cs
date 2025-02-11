@@ -1,4 +1,5 @@
-﻿using MvvmHelpers.Commands;
+﻿using MvvmHelpers;
+using MvvmHelpers.Commands;
 using ScreenSketcher.Enums;
 using ScreenSketcher.Services;
 using System.Windows;
@@ -11,7 +12,7 @@ using System.Windows.Threading;
 
 namespace ScreenSketcher.ViewModels
 {
-    internal class MainWindowViewModel : ViewModelBase
+    internal class MainWindowViewModel : BaseViewModel
     {
         #region Singleton
 
@@ -119,9 +120,9 @@ namespace ScreenSketcher.ViewModels
             }
         }
 
-        private DrawingAttributes _drawingAttributes;
+        private DrawingAttributes? _drawingAttributes;
 
-        public DrawingAttributes DrawingAttributes
+        public DrawingAttributes? DrawingAttributes
         {
             get => _drawingAttributes;
             private set => SetProperty(ref _drawingAttributes, value);
@@ -171,17 +172,17 @@ namespace ScreenSketcher.ViewModels
 
         #region Commands
 
-        public Command EscapeCommand { get; private set; }
-        public AsyncCommand SaveCommand { get; private set; }
-        public Command ResetCommand { get; private set; }
+        public Command? EscapeCommand { get; private set; }
+        public AsyncCommand? SaveCommand { get; private set; }
+        public Command? ResetCommand { get; private set; }
 
-        public Command<InkCanvasStrokeCollectedEventArgs> StrokeCollectedCommand { get; private set; }
-        public Command UndoCommand { get; private set; }
-        public Command RedoCommand { get; private set; }
+        public Command<InkCanvasStrokeCollectedEventArgs>? StrokeCollectedCommand { get; private set; }
+        public Command? UndoCommand { get; private set; }
+        public Command? RedoCommand { get; private set; }
 
-        public Command MouseWheelCommand { get; private set; }
+        public Command? MouseWheelCommand { get; private set; }
 
-        public Command<DrawingTool> OnToolSelected { get; private set; }
+        public Command<DrawingTool>? OnToolSelected { get; private set; }
 
         #endregion Commands
 
