@@ -26,13 +26,13 @@ Based on WPF .NET 8.0
 
 ## Instructions
 
-`CTRL + F8` or from the system tray click and open drawing window
-`CTRL + Mouse Wheel` to change brush size
-`CTRL + Z/Y` for undo & redo drawing
-`CTRL + N` for new drawing
-`ESC` to close and reset drawing overlay
-`CTRL + S` to save screenshot with drawings
-Use the toolbar to change the tool/brush and color
+- `CTRL + F8` or from the system tray click and open drawing window
+- `CTRL + Mouse Wheel` to change brush size
+- `CTRL + Z/Y` for undo & redo drawing
+- `CTRL + N` for new drawing
+- `ESC` to close and reset drawing overlay
+- `CTRL + S` to save screenshot with drawings
+- Use the toolbar to change the tool/brush and color
 
 ## Upcoming Features
 
