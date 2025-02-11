@@ -1,4 +1,5 @@
 ﻿using ScreenSketcher.ViewModels;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -30,7 +31,9 @@ namespace ScreenSketcher
         {
             _mainWindow = new();
 
-            _trayIcon = new(fileName: "Icon.ico");
+            string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Icons", "Icon.ico");
+            _trayIcon = new(fileName: iconPath);
+
             _notifyIcon = CreateNotifyIcon();
             _notifyIcon.MouseDown += OnNotifyIconMouseDown;
 
