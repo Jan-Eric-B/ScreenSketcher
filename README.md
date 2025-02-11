@@ -1,10 +1,15 @@
 # ScreenSketcher
 
+![Example Screenshot](screenshots/ExampleScreenshot.png)
+
 An easy-to-use lightweight screenshot tool that allows you to draw directly on the screen.
 It is ideal for presentations and demonstrations.
 Based on WPF .NET 8.0
 
 ## Features
+
+![Application Overlay](screenshots/ApplicationOverlay.png)
+
 
 - 🎨 Screen drawing
 - 🖌️ Multiple drawing tools:
