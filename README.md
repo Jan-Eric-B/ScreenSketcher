@@ -4,7 +4,7 @@
 
 An easy-to-use lightweight screenshot tool that allows you to draw directly on the screen.
 It is ideal for presentations and demonstrations.
-Based on WPF .NET 8.0
+Based on WPF .NET 8.0 in the MVVM pattern.
 
 ## Features
 
@@ -49,6 +49,7 @@ Based on WPF .NET 8.0
 - 🌈 Preset color palettes
 
 ## Dependencies
+- [InnoSetup](https://github.com/jrsoftware/issrc) -  Installer for Windows programs
 - [PixiEditor.ColorPicker](https://github.com/PixiEditor/ColorPicker) - Color picker control for WPF
 - [Ookii.Dialogs.Wpf](https://github.com/ookii-dialogs/ookii-dialogs-wpf) - Dialogs for Windows Desktop applications 
 - [Microsoft.Xaml.Behaviors.Wpf](https://github.com/microsoft/XamlBehaviorsWpf) - Event trigger handling and command binding for MVVM pattern 
