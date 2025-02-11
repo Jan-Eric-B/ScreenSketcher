@@ -3,9 +3,10 @@
 #define MyAppPublisher "J-E"
 #define MyAppExeName "ScreenSketcher.exe"
 #define MyAppIcon "..\src\ScreenSketcher\ScreenSketcher\Resources\Icons\Icon.ico"
+#define MyAppId "com.je.screensketcher"
 
 [Setup]
-AppId={{5A6E9471-9523-4E24-B28F-8453A7A6694D}
+AppId={#MyAppId}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
