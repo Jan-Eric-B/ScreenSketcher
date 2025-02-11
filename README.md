@@ -53,7 +53,7 @@ Based on WPF .NET 8.0 in the MVVM pattern.
 - [PixiEditor.ColorPicker](https://github.com/PixiEditor/ColorPicker) - Color picker control for WPF
 - [Ookii.Dialogs.Wpf](https://github.com/ookii-dialogs/ookii-dialogs-wpf) - Dialogs for Windows Desktop applications 
 - [Microsoft.Xaml.Behaviors.Wpf](https://github.com/microsoft/XamlBehaviorsWpf) - Event trigger handling and command binding for MVVM pattern 
-- [Refractored.MvvmHelpers](https://github.com/jamesmontemagno/mvvm-helpers) - Collection of MVVM helper classes for any application
+- [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/MVVM-Samples) - Collection of MVVM helper classes for any application
 
 ## Building from Source
 

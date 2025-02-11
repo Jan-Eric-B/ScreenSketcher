@@ -1,5 +1,5 @@
-﻿using MvvmHelpers;
-using MvvmHelpers.Commands;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using ScreenSketcher.Enums;
 using ScreenSketcher.Services;
 using System.Windows;
@@ -12,7 +12,7 @@ using System.Windows.Threading;
 
 namespace ScreenSketcher.ViewModels
 {
-    internal class MainWindowViewModel : BaseViewModel
+    internal class MainWindowViewModel : ObservableObject
     {
         #region Singleton
 
@@ -172,17 +172,17 @@ namespace ScreenSketcher.ViewModels
 
         #region Commands
 
-        public Command? EscapeCommand { get; private set; }
-        public AsyncCommand? SaveCommand { get; private set; }
-        public Command? ResetCommand { get; private set; }
+        public RelayCommand? EscapeCommand { get; private set; }
+        public AsyncRelayCommand? SaveCommand { get; private set; }
+        public RelayCommand? ResetCommand { get; private set; }
 
-        public Command<InkCanvasStrokeCollectedEventArgs>? StrokeCollectedCommand { get; private set; }
-        public Command? UndoCommand { get; private set; }
-        public Command? RedoCommand { get; private set; }
+        public RelayCommand<InkCanvasStrokeCollectedEventArgs>? StrokeCollectedCommand { get; private set; }
+        public RelayCommand? UndoCommand { get; private set; }
+        public RelayCommand? RedoCommand { get; private set; }
 
-        public Command? MouseWheelCommand { get; private set; }
+        public RelayCommand<MouseWheelEventArgs>? MouseWheelCommand { get; private set; }
 
-        public Command<DrawingTool>? OnToolSelected { get; private set; }
+        public RelayCommand<DrawingTool>? OnToolSelected { get; private set; }
 
         #endregion Commands
 
@@ -211,22 +211,22 @@ namespace ScreenSketcher.ViewModels
         private void InitializeCommands()
         {
             // [ESC] Close window
-            EscapeCommand = new Command(CloseWindow);
+            EscapeCommand = new RelayCommand(CloseWindow);
 
             // [CTRL + S] Save Screenshot
-            SaveCommand = new AsyncCommand(SaveScreenshotAsync);
+            SaveCommand = new AsyncRelayCommand(SaveScreenshotAsync);
 
             // [CTRL + N] Reset Drawing
-            ResetCommand = new Command(ResetDrawing);
+            ResetCommand = new RelayCommand(ResetDrawing);
 
-            StrokeCollectedCommand = new Command<InkCanvasStrokeCollectedEventArgs>(OnStrokeCollected);
-            UndoCommand = new Command(Undo, () => _undoStack.Count != 0);
-            RedoCommand = new Command(Redo, () => _redoStack.Count != 0);
+            StrokeCollectedCommand = new RelayCommand<InkCanvasStrokeCollectedEventArgs>(OnStrokeCollected);
+            UndoCommand = new RelayCommand(Undo, () => _undoStack.Count != 0);
+            RedoCommand = new RelayCommand(Redo, () => _redoStack.Count != 0);
 
             // Control Brush Size
-            MouseWheelCommand = new Command<MouseWheelEventArgs>(HandleMouseWheelScrolled);
+            MouseWheelCommand = new RelayCommand<MouseWheelEventArgs>(HandleMouseWheelScrolled);
 
-            OnToolSelected = new Command<DrawingTool>(tool => CurrentTool = tool);
+            OnToolSelected = new RelayCommand<DrawingTool>(tool => CurrentTool = tool);
         }
 
         private void InitializeTools()
@@ -327,12 +327,24 @@ namespace ScreenSketcher.ViewModels
             }
         }
 
-        private void HandleMouseWheelScrolled(MouseWheelEventArgs args)
+        private void HandleMouseWheelScrolled(MouseWheelEventArgs? args)
         {
+            if (args is null)
+            {
+                return;
+            }
+
             // Increases and decreases drawing thickness
             if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                DrawingThickness += args.Delta > 0 ? 1 : -1;
+                if (args.Delta > 0)
+                {
+                    DrawingThickness = Math.Min(500, DrawingThickness + 1);
+                }
+                else
+                {
+                    DrawingThickness = Math.Max(5, DrawingThickness - 1);
+                }
             }
         }
 
@@ -368,7 +380,7 @@ namespace ScreenSketcher.ViewModels
             }
         }
 
-        private void OnStrokeCollected(InkCanvasStrokeCollectedEventArgs e)
+        private void OnStrokeCollected(InkCanvasStrokeCollectedEventArgs? e)
         {
             _undoStack.Push(new StrokeCollection(Strokes.Take(Strokes.Count - 1)));
             _redoStack.Clear();
