@@ -33,7 +33,7 @@ Name: "startup"; Description: "Start automatically at Windows startup"; GroupDes
 Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\ColorPicker.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\Microsoft.Xaml.Behaviors.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\MvvmHelpers.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\CommunityToolkit.Mvvm.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\Ookii.Dialogs.Wpf.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\ScreenSketcher.deps.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\src\ScreenSketcher\bin\Release\net8.0-windows\ScreenSketcher.dll"; DestDir: "{app}"; Flags: ignoreversion
