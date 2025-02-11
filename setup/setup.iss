@@ -1,5 +1,5 @@
 #define MyAppName "ScreenSketcher"
-#define MyAppVersion "0.0.1"
+#define MyAppVersion "0.0.2"
 #define MyAppPublisher "J-E"
 #define MyAppExeName "ScreenSketcher.exe"
 #define MyAppIcon "..\src\ScreenSketcher\Resources\Icons\Icon.ico"

@@ -9,6 +9,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationIcon>Resources\Icons\Icon.ico</ApplicationIcon>
+    <Version>0.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
